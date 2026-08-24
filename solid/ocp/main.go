@@ -36,7 +36,7 @@ type Filter struct{}
 // the following methods are not open for extension, closed for modification
 // they violate the OCP principle because if we want to add a new filter,
 // we have to modify the Filter struct
-func (f *Filter) FilterByColor(products []Product, color Color) []*Product {
+func (f Filter) FilterByColor(products []Product, color Color) []*Product {
 	result := make([]*Product, 0)
 	for i, v := range products {
 		if v.color == color {
@@ -47,7 +47,7 @@ func (f *Filter) FilterByColor(products []Product, color Color) []*Product {
 }
 
 // the following methods are not open for extension, closed for modification
-func (f *Filter) FilterBySize(products []Product, size Size) []*Product {
+func (f Filter) FilterBySize(products []Product, size Size) []*Product {
 	result := make([]*Product, 0)
 	for i, v := range products {
 		if v.size == size {
@@ -58,7 +58,7 @@ func (f *Filter) FilterBySize(products []Product, size Size) []*Product {
 }
 
 // the following methods are not open for extension, closed for modification
-func (f *Filter) FilterBySizeAndColor(products []Product, size Size, color Color) []*Product {
+func (f Filter) FilterBySizeAndColor(products []Product, size Size, color Color) []*Product {
 	result := make([]*Product, 0)
 	for i, v := range products {
 		if v.size == size && v.color == color {
@@ -108,7 +108,7 @@ func (a AndSpecification) IsSatisfied(p *Product) bool {
 type BetterFilter struct{}
 
 // Just one method that takes a specification and filters the products based on it
-func (b *BetterFilter) Filter(products []Product, spec Specification) []*Product {
+func (b BetterFilter) Filter(products []Product, spec Specification) []*Product {
 	result := make([]*Product, 0)
 	for i, v := range products {
 		if spec.IsSatisfied(&v) {
