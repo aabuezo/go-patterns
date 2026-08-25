@@ -14,7 +14,7 @@ A type should have one responsibility only
 A type should be: open for extension, closed for modification
 
 ### Liskov Substitution Principle (lsp)
-
+Subtypes must be substitutable for their base types
 
 ### Interface Segregation Principle (isp)
 
