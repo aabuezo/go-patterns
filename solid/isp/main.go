@@ -12,26 +12,20 @@ import "fmt"
 type Document struct {
 }
 
-type Printer interface {
+type PrinterScanner interface {
 	Print(d Document) error
-	Fax(d Document) error
 	Scan(d Document) error
 }
 
-type MultiFunctionPrinter struct {
+type NewerPrinter struct {
 }
 
-func (mfp MultiFunctionPrinter) Print(d Document) error {
+func (mfp NewerPrinter) Print(d Document) error {
 	fmt.Println("Printing document...")
 	return nil
 }
 
-func (mfp MultiFunctionPrinter) Fax(d Document) error {
-	fmt.Println("Faxing document...")
-	return nil
-}
-
-func (mfp MultiFunctionPrinter) Scan(d Document) error {
+func (mfp NewerPrinter) Scan(d Document) error {
 	fmt.Println("Scanning document...")
 	return nil
 }
@@ -45,31 +39,33 @@ func (ofp OldFashionedPrinter) Print(d Document) error {
 }
 
 // OldFashionedPrinter no tiene capacidades de fax ni de escaneo,
-// por lo que no debería verse obligado a implementar esos métodos.
+// por lo que no debería verse obligado a implementar Scan.
 
 // ISP
 // Ahora podemos crear interfaces separadas para cada capacidad.
-type PrinterOnly interface {
+type Printer interface {
 	Print(d Document) error
 }
 
-type FaxOnly interface {
-	Fax(d Document) error
+type Scanner interface {
+	Scan(d Document) error
 }
 
-type ScanOnly interface {
-	Scan(d Document) error
+// Tambien podemos crear una interfaz que incluya ambas capacidades,
+// para aquellos clientes que necesiten ambas.
+type MultiFunctionDevice interface {
+	Printer
+	Scanner
 }
 
 func main() {
 	doc := Document{}
-	var p Printer = MultiFunctionPrinter{}
-	var po PrinterOnly = MultiFunctionPrinter{}
 
+	mfd := NewerPrinter{}
+	mfd.Print(doc)
+	mfd.Scan(doc)
+
+	p := OldFashionedPrinter{}
 	p.Print(doc)
-	p.Scan(doc)
-	p.Fax(doc)
-
-	po.Print(doc)
 
 }
