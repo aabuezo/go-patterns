@@ -1,81 +1,45 @@
-// SRP = Principio de responsabilidad única
+// SRP - Principio de responsabilidad única
 package main
 
-// Un tipo debería tener una única responsabilidad.
+import "fmt"
 
-import (
-	"fmt"
-	"net/url"
-	"os"
-	"strings"
-)
-
-var entryCount = 0
-
-// El tipo Journal tiene una única responsabilidad (separación de intereses):
-// agregar, eliminar, etc. entradas y administrar esas entradas.
-type Journal struct {
-	entries []string
+// Product representa un producto del carrito.
+type Product struct {
+	Name  string
+	Price float64
 }
 
-func (j *Journal) AddEntry(text string) int {
-	entryCount++
-	entry := fmt.Sprintf("%d: %s",
-		entryCount, text)
-	j.entries = append(j.entries, entry)
-	return entryCount
+// ShoppingCart tiene una responsabilidad: mantener los productos y calcular
+// el total del carrito.
+type ShoppingCart struct {
+	products []Product
 }
 
-func (j *Journal) String() string {
-	return strings.Join(j.entries, "\n")
+func (c *ShoppingCart) Add(product Product) {
+	c.products = append(c.products, product)
 }
 
-// Separación de intereses.
-// ¡La persistencia no es responsabilidad de Journal!
-// La persistencia puede ser administrada por otro componente.
-// Pensemos también en otros tipos que necesitan persistencia.
-// ¡La persistencia es común a muchos objetos!
-func (j *Journal) Save(filename string) { // ¡Rompe el SRP!
-	_ = os.WriteFile(filename,
-		[]byte(j.String()), os.ModeAppend)
+func (c ShoppingCart) Total() float64 {
+	total := 0.0
+	for _, product := range c.products {
+		total += product.Price
+	}
+	return total
 }
 
-func (j *Journal) Load(filename string) { // ¡Rompe el SRP!
+// ReceiptPrinter tiene otra responsabilidad: mostrar el total de una compra.
+// No necesita conocer cómo se guardan los productos ni cómo se calcula el total.
+type ReceiptPrinter struct{}
 
-}
-
-func (j *Journal) LoadFromWeb(url *url.URL) { // ¡Rompe el SRP!
-
-}
-
-// Separar los intereses podría verse de la siguiente manera
-// (a nivel de paquete).
-var LineSeparator = "\n"
-
-func SaveToFile(j *Journal, filename string) {
-	_ = os.WriteFile(filename,
-		[]byte(strings.Join(j.entries, LineSeparator)), 0644)
-}
-
-// O de esta manera (usando un objeto separado).
-type Persistence struct {
-	lineSeparator string
-}
-
-func (p *Persistence) SaveToFile(j *Journal, filename string) {
-	_ = os.WriteFile(filename,
-		[]byte(strings.Join(j.entries, p.lineSeparator)), 0644)
+func (ReceiptPrinter) Print(cart ShoppingCart) {
+	fmt.Println("Total de la compra:", cart.Total())
 }
 
 func main() {
-	j := Journal{}
-	j.AddEntry("I cried today")
-	j.AddEntry("I ate a bug")
-	fmt.Println(j.String())
+	cart := ShoppingCart{}
+	cart.Add(Product{Name: "Libro", Price: 20})
+	cart.Add(Product{Name: "Cuaderno", Price: 5})
 
-	// Persistencia.
-	SaveToFile(&j, "journal.txt")
-	//
-	p := Persistence{"\r\n"}
-	p.SaveToFile(&j, "journal.txt")
+	printer := ReceiptPrinter{}
+	printer.Print(cart)
 }

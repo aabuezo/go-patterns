@@ -1,74 +1,59 @@
-# OCP en Go: principio abierto/cerrado
+# Open/Closed Principle (OCP)
 
-OCP significa **Open/Closed Principle**.
-
-La idea central es:
+El principio abierto/cerrado dice:
 
 > Un componente debería estar abierto para extenderse, pero cerrado para modificarse.
 
-Esto significa que, cuando aparece un nuevo comportamiento, idealmente podemos agregar código nuevo sin tener que cambiar y arriesgar el código existente que ya funciona.
+Esto significa que, cuando aparece un comportamiento nuevo, idealmente podemos agregar una nueva implementación sin cambiar el código que ya funciona.
 
-## El problema en `Filter`
+## El ejemplo de los descuentos
 
-En tu ejemplo, `Filter` tiene métodos separados:
-
-```go
-FilterByColor(...)
-FilterBySize(...)
-FilterBySizeAndColor(...)
-```
-
-Mientras solo existan esos criterios, funciona. Pero si necesitás filtrar por precio, nombre o una combinación nueva, tenés que agregar otro método o modificar la estructura de `Filter`.
-
-Con muchos criterios, `Filter` empieza a acumular casos especiales. El componente principal deja de estar cerrado para modificación: cada filtro nuevo exige tocar código existente.
-
-## La extensión mediante `Specification`
-
-La interfaz de tu ejemplo abstrae el criterio de búsqueda:
+`Checkout` necesita aplicar un descuento, pero no necesita conocer todos los tipos posibles:
 
 ```go
-type Specification interface {
-    IsSatisfied(p *Product) bool
+type Discount interface {
+	Apply(price float64) float64
 }
 ```
 
-`BetterFilter` solo necesita saber si un producto cumple una especificación:
+El método `FinalPrice` recibe cualquier `Discount`:
 
 ```go
-func (b BetterFilter) Filter(products []Product, spec Specification) []*Product
+func (Checkout) FinalPrice(price float64, discount Discount) float64 {
+	return discount.Apply(price)
+}
 ```
 
-El filtro no conoce los detalles de color, tamaño ni futuros criterios. Cada criterio se agrega creando un nuevo tipo que implemente `Specification`.
+Para agregar un descuento nuevo, por ejemplo del 20%, creamos un tipo que implemente `Discount`:
 
-Por ejemplo, `ColorSpecification` y `SizeSpecification` son extensiones independientes. `AndSpecification` permite combinarlas sin modificar `BetterFilter`.
+```go
+type TwentyPercentDiscount struct{}
 
-El flujo queda así:
-
-```text
-nuevo criterio
-      |
-      v
-nueva Specification ---> BetterFilter.Filter
-                              |
-                              v
-                         productos filtrados
+func (TwentyPercentDiscount) Apply(price float64) float64 {
+	return price * 0.80
+}
 ```
 
-`BetterFilter` está cerrado para modificación porque su algoritmo no necesita cambiar. Está abierto para extensión porque puede recibir cualquier nueva implementación de `Specification`.
+No necesitamos modificar `Checkout`, `FinalPrice`, `NoDiscount` ni `TenPercentDiscount`.
 
-## Qué no significa OCP
+## El error que queremos evitar
 
-OCP no significa que nunca puedas modificar un archivo. Los requisitos cambian y a veces hay que corregir código existente.
+Un diseño menos flexible tendría un método con un `switch`:
 
-Significa que conviene diseñar los puntos variables detrás de una abstracción. En este caso, lo que cambia es el criterio de filtrado, por eso ese comportamiento queda representado por `Specification`.
+```go
+func FinalPrice(price float64, discountType string) float64 {
+	switch discountType {
+	case "10%":
+		return price * 0.90
+	case "20%":
+		return price * 0.80
+	}
+	return price
+}
+```
+
+Cada nuevo descuento obligaría a modificar este método. Con una interfaz, el nuevo comportamiento se agrega como una extensión.
 
 ## Regla práctica
 
-Preguntate:
-
-> Si mañana aparece un nuevo caso de comportamiento, ¿tengo que agregar un `if`, un `switch` o un método especial al componente principal?
-
-Si la respuesta es sí y esperás que aparezcan muchos casos, puede ser útil extraer ese comportamiento a una interfaz o a componentes separados.
-
-En tu ejercicio, agregar una nueva especificación debería requerir crear un tipo nuevo, sin modificar `BetterFilter` ni las especificaciones que ya funcionan.
-
+Si cada nuevo caso te obliga a agregar otro `if`, `switch` o método al componente principal, preguntate si ese comportamiento variable podría representarse mediante una interfaz.

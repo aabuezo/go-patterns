@@ -1,24 +1,34 @@
 # Interface Segregation Principle (ISP)
 
-El principio de segregación de interfaces establece que ningún cliente debería depender de métodos que no necesita.
+El principio de segregación de interfaces dice:
 
-En lugar de crear una interfaz grande con muchas responsabilidades, conviene dividirla en interfaces pequeñas y específicas. Así, cada tipo o función puede depender únicamente de las operaciones que realmente utiliza.
+> Ningún cliente debería depender de métodos que no necesita.
 
-Por ejemplo, una impresora que solo imprime no debería verse obligada a implementar el método `Scan`. Podemos separar cada capacidad en una interfaz pequeña:
+La idea es crear interfaces pequeñas, donde cada una represente una capacidad concreta.
+
+## El ejemplo
+
+En `main.go` separamos las capacidades de una máquina:
 
 ```go
 type Printer interface {
-	Print(d Document) error
+	Print(document string)
 }
 
 type Scanner interface {
-	Scan(d Document) error
+	Scan(document string)
 }
 ```
 
-`OldFashionedPrinter` implementa únicamente `Printer`, mientras que `NewerPrinter` implementa tanto `Printer` como `Scanner`. En Go, la implementación de interfaces es implícita: un tipo cumple una interfaz cuando posee todos sus métodos.
+`BasicPrinter` solo imprime, así que implementa `Printer` y no necesita tener un método `Scan` inútil.
 
-También podemos crear una interfaz compuesta que incluya otras interfaces:
+`OfficeDevice` puede imprimir y escanear, por lo que implementa ambas interfaces. En Go, esto ocurre de manera implícita: alcanza con que el tipo tenga los métodos requeridos.
+
+La función `PrintDocument` recibe un `Printer` porque solo necesita imprimir. Puede trabajar tanto con `BasicPrinter` como con `OfficeDevice` sin conocer sus detalles.
+
+## Interfaces compuestas
+
+Si una función necesita las dos capacidades, podemos combinar las interfaces:
 
 ```go
 type MultiFunctionDevice interface {
@@ -27,6 +37,12 @@ type MultiFunctionDevice interface {
 }
 ```
 
-Todo tipo que implemente `MultiFunctionDevice` debe implementar los métodos de `Printer` y `Scanner`, es decir, `Print` y `Scan`.
+`CopyDocument` usa esta interfaz porque necesita escanear e imprimir.
 
-El objetivo del ISP es reducir el acoplamiento y hacer que el código sea más simple de implementar, mantener y probar.
+## Regla práctica
+
+Antes de crear una interfaz grande, preguntate:
+
+> ¿Todos los tipos que la implementen realmente necesitan todos estos métodos?
+
+Si la respuesta es no, probablemente convenga dividirla en interfaces más pequeñas.

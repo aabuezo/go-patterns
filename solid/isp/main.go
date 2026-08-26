@@ -3,69 +3,59 @@ package main
 
 import "fmt"
 
-// El ISP establece que ningún cliente debería verse obligado a depender de
-// métodos que no utiliza. En este ejemplo, la interfaz Printer tiene tres
-// métodos: Print, Fax y Scan. Sin embargo, no todas las impresoras tienen
-// capacidades de fax o escaneo. Por lo tanto, podemos crear interfaces
-// separadas para cada capacidad.
-
-type Document struct {
-}
-
-type PrinterScanner interface {
-	Print(d Document) error
-	Scan(d Document) error
-}
-
-type NewerPrinter struct {
-}
-
-func (mfp NewerPrinter) Print(d Document) error {
-	fmt.Println("Printing document...")
-	return nil
-}
-
-func (mfp NewerPrinter) Scan(d Document) error {
-	fmt.Println("Scanning document...")
-	return nil
-}
-
-type OldFashionedPrinter struct {
-}
-
-func (ofp OldFashionedPrinter) Print(d Document) error {
-	fmt.Println("Printing document...")
-	return nil
-}
-
-// OldFashionedPrinter no tiene capacidades de fax ni de escaneo,
-// por lo que no debería verse obligado a implementar Scan.
-
-// ISP
-// Ahora podemos crear interfaces separadas para cada capacidad.
+// Una interfaz describe una capacidad pequeña y concreta.
 type Printer interface {
-	Print(d Document) error
+	Print(document string)
 }
 
 type Scanner interface {
-	Scan(d Document) error
+	Scan(document string)
 }
 
-// Tambien podemos crear una interfaz que incluya ambas capacidades,
-// para aquellos clientes que necesiten ambas.
+// BasicPrinter solo imprime. No tiene que implementar Scan porque no depende
+// de una interfaz grande que mezcle capacidades diferentes.
+type BasicPrinter struct{}
+
+func (BasicPrinter) Print(document string) {
+	fmt.Println("Imprimiendo:", document)
+}
+
+// OfficeDevice tiene las dos capacidades y, por eso, implementa ambas
+// interfaces de manera implícita.
+type OfficeDevice struct{}
+
+func (OfficeDevice) Print(document string) {
+	fmt.Println("Imprimiendo:", document)
+}
+
+func (OfficeDevice) Scan(document string) {
+	fmt.Println("Escaneando:", document)
+}
+
+// Esta función solo necesita imprimir y no necesita saber si recibe una
+// BasicPrinter o un OfficeDevice.
+func PrintDocument(printer Printer, document string) {
+	printer.Print(document)
+}
+
+// Esta interfaz compuesta sirve para un cliente que necesita ambas capacidades.
+// Un tipo que la implementa debe tener Print y Scan.
 type MultiFunctionDevice interface {
 	Printer
 	Scanner
 }
 
+func CopyDocument(device MultiFunctionDevice, document string) {
+	device.Scan(document)
+	device.Print(document)
+}
+
 func main() {
-	doc := Document{}
+	document := "informe.txt"
 
-	mfd := NewerPrinter{}
-	mfd.Print(doc)
-	mfd.Scan(doc)
+	PrintDocument(BasicPrinter{}, document)
 
-	p := OldFashionedPrinter{}
-	p.Print(doc)
-
+	officeDevice := OfficeDevice{}
+	PrintDocument(officeDevice, document)
+	CopyDocument(officeDevice, document)
 }

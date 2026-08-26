@@ -1,84 +1,49 @@
-# LSP en Go: principio de sustitución de Liskov
+# Liskov Substitution Principle (LSP)
 
-LSP significa **Liskov Substitution Principle**.
+El principio de sustitución de Liskov dice:
 
-La idea central es:
+> Si una función espera un tipo o una interfaz, cualquier implementación válida debería poder reemplazarlo sin romper el comportamiento esperado.
 
-> Si un tipo se presenta como una variante de otro tipo, cualquier código que espera el tipo original debería seguir funcionando correctamente al recibir la variante.
+Una forma simple de detectarlo es revisar qué promete una abstracción. No deberíamos incluir en un contrato una capacidad que algunas implementaciones no pueden cumplir.
 
-No alcanza con que la variante tenga métodos parecidos. También debe respetar el comportamiento que el código cliente espera.
+## El ejemplo de los pájaros
 
-## El ejemplo del rectángulo y el cuadrado
-
-Un rectángulo permite cambiar su ancho y su alto independientemente. Por ejemplo:
+Todos los pájaros del ejemplo pueden comer, por eso `Bird` solo declara `Eat`:
 
 ```go
-r.SetWidth(5)
-r.SetHeight(10)
-```
-
-Después de esas operaciones esperamos que el área sea `50`.
-
-Un cuadrado, en cambio, necesita que ancho y alto sean siempre iguales. Si recibe las mismas operaciones:
-
-```go
-s.SetWidth(5)  // ancho = 5, alto = 5
-s.SetHeight(10) // ancho = 10, alto = 10
-```
-
-el área termina siendo `100`, no `50`.
-
-Si `Square` pudiera sustituir a `Rectangle`, el código que trabaja con un rectángulo recibiría un resultado inesperado. Esa es la violación de LSP: la variante no respeta las expectativas del tipo original.
-
-## Importante en Go
-
-Go no tiene herencia clásica. Esto:
-
-```go
-type Square struct {
-    Rectangle
+type Bird interface {
+	Eat()
 }
 ```
 
-es **embedding** o composición. `Square` contiene un `Rectangle` y puede recibir algunos métodos promocionados, pero no se convierte automáticamente en un subtipo de `Rectangle`.
-
-Por ejemplo, una función que recibe un `Rectangle` no acepta directamente un `Square`:
+Un gorrión también puede volar, así que puede cumplir una interfaz más específica:
 
 ```go
-func printArea(r Rectangle) {
-    fmt.Println(r.Area())
+type FlyingBird interface {
+	Bird
+	Fly()
 }
 ```
 
-La violación de LSP en este ejercicio es principalmente conceptual: estamos modelando al cuadrado como una clase especial de rectángulo, aunque sus reglas para modificar ancho y alto son incompatibles.
+El pingüino cumple `Bird`, pero no cumple `FlyingBird`. Por eso no se lo puede pasar a `MakeBirdFly`, que necesita un pájaro capaz de volar.
 
-## La solución con interfaces
+## El error que queremos evitar
 
-En tu código, esta interfaz representa una propiedad común válida:
+Una interfaz como esta sería problemática:
 
 ```go
-type Shape interface {
-    Area() float64
+type Bird interface {
+	Eat()
+	Fly()
 }
 ```
 
-Una función que solo necesita calcular áreas puede trabajar con ambos tipos:
-
-```go
-func printArea(s Shape) {
-    fmt.Println(s.Area())
-}
-```
-
-Tanto `Rectangle` como `Square` cumplen el contrato de `Shape`, y ninguno rompe las expectativas de la interfaz. La interfaz solo promete que el objeto sabe calcular su área; no promete que se pueda modificar el ancho y el alto de una manera determinada.
+Obligaría al pingüino a implementar `Fly`, aunque no puede hacerlo. Una implementación que devuelve un error, no hace nada o produce un comportamiento inesperado no estaría respetando el contrato.
 
 ## Regla práctica
 
-Cuando diseñes una interfaz o una relación entre tipos, preguntate:
+Preguntate:
 
-> ¿Cualquier implementación puede cumplir este contrato sin producir sorpresas para quien la usa?
+> ¿Puedo reemplazar una implementación por otra sin que el código que la usa se sorprenda?
 
-Si la respuesta es sí, probablemente estás respetando LSP.
-
-En este ejemplo, `Rectangle` y `Square` pueden compartir `Shape`, pero no deberían compartir una abstracción que permita cambiar ancho y alto libremente.
-
+Si no, el contrato probablemente es demasiado amplio o la abstracción no representa correctamente a todas sus implementaciones.
