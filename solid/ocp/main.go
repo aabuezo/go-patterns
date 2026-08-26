@@ -22,6 +22,14 @@ func (TenPercentDiscount) Apply(price float64) float64 {
 	return price * 0.90
 }
 
+// Si quiero agregar un nuevo tipo de descuento, simplemente creo una nueva
+// estructura que implemente la interfaz Discount.
+type TwentyPercentDiscount struct{}
+
+func (TwentyPercentDiscount) Apply(price float64) float64 {
+	return price * 0.80
+}
+
 // Checkout calcula el precio usando cualquier descuento que cumpla la
 // interfaz. No necesita conocer cada tipo de descuento.
 type Checkout struct{}
@@ -35,4 +43,5 @@ func main() {
 
 	fmt.Println("Precio sin descuento:", checkout.FinalPrice(100, NoDiscount{}))
 	fmt.Println("Precio con 10% de descuento:", checkout.FinalPrice(100, TenPercentDiscount{}))
+	fmt.Println("Precio con 20% de descuento:", checkout.FinalPrice(100, TwentyPercentDiscount{}))
 }

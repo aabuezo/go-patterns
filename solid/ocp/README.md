@@ -6,6 +6,8 @@ El principio abierto/cerrado dice:
 
 Esto significa que, cuando aparece un comportamiento nuevo, idealmente podemos agregar una nueva implementación sin cambiar el código que ya funciona.
 
+En este ejemplo, el componente que queremos mantener cerrado es `Checkout`. `main` cumple otro rol: conecta las piezas y decide qué descuento usar. Por eso es normal modificar `main` para probar o seleccionar un descuento nuevo. Lo importante es que no tenemos que modificar `Checkout` ni `FinalPrice` cada vez que aparece una nueva regla.
+
 ## El ejemplo de los descuentos
 
 `Checkout` necesita aplicar un descuento, pero no necesita conocer todos los tipos posibles:
@@ -33,6 +35,29 @@ func (TwentyPercentDiscount) Apply(price float64) float64 {
 	return price * 0.80
 }
 ```
+
+La ventaja se nota más cuando el descuento no consiste solamente en multiplicar por un porcentaje. Por ejemplo, Black Friday podría aplicar una tasa distinta según el precio:
+
+```go
+type BlackFridayDiscount struct{}
+
+func (BlackFridayDiscount) Apply(price float64) float64 {
+	if price > 1000 {
+		return price * 0.70
+	}
+	return price * 0.85
+}
+```
+
+Para usarlo, `main` agrega la selección de esta nueva estrategia:
+
+```go
+fmt.Println("Precio de Black Friday:", checkout.FinalPrice(1500, BlackFridayDiscount{}))
+```
+
+No fue necesario agregar otro `if` a `FinalPrice`. `Checkout` solo sabe que recibió algo con un método `Apply`; no necesita conocer las reglas de Black Friday, del descuento del 10% ni de ningún descuento futuro.
+
+Si todos los descuentos fueran siempre porcentajes fijos, pasar un `float64` podría ser más simple. La interfaz resulta útil cuando lo que cambia no es solamente un valor, sino la lógica para calcular el precio.
 
 No necesitamos modificar `Checkout`, `FinalPrice`, `NoDiscount` ni `TenPercentDiscount`.
 
