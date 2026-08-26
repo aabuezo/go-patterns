@@ -1,23 +1,30 @@
-# Design Patterns with Go
+# Patrones de diseño con Go
 
-## SOLID Principles
-- Single Responsibility Principle (srp)
-- Open-Closed Principle (ocp)
-- Liskov Substitution Principle (lsp)
-- Interface Segregation Principle (isp)
-- Dependency Inversion Principle (dip)
+Este repositorio contiene ejemplos simples para aprender principios SOLID y patrones de diseño en Go.
 
-### Single Responsibility Principle (srp)
-A type should have one responsibility only
+## Principios SOLID
 
-### Open-Closed Principle (ocp)
-A type should be: open for extension, closed for modification
+- [SRP - Responsabilidad única](solid/srp/)
+- [OCP - Abierto/cerrado](solid/ocp/)
+- [LSP - Sustitución de Liskov](solid/lsp/)
+- [ISP - Segregación de interfaces](solid/isp/)
+- [DIP - Inversión de dependencias](solid/dip/)
 
-### Liskov Substitution Principle (lsp)
-Subtypes must be substitutable for their base types
+## Patrones de diseño
 
-### Interface Segregation Principle (isp)
+- [Adapter](adapter/)
+- [Builder](builder/)
+- [Chain of Responsibility](chain-of-responsibility/)
+- [Command](command/)
+- [Composite](composite/)
+- [Decorator](decorator/)
+- [Facade](facade/)
+- [Factory](factory/)
+- [Observer](observer/)
+- [Proxy](proxy/)
+- [Singleton](singleton/)
+- [State](state/)
+- [Strategy](strategy/)
+- [Visitor](visitor/)
 
-
-### Dependency Inversion Principle (dip)
-
+Cada carpeta contiene un `main.go` ejecutable y un `README.md` con una explicación del patrón, su uso y sus principales ventajas o límites.
