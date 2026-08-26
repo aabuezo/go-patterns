@@ -1,11 +1,12 @@
-// LSP - Liskov Substitution Principle
+// LSP - Principio de sustitución de Liskov
 package main
 
 import "fmt"
 
-// LSP: Subtypes must be substitutable for their base types
-// it means that if S is a subtype of T, then objects of type T may be replaced with objects of type S
-// without altering any of the desirable properties of that program (correctness, task performed, etc.)
+// LSP: los subtipos deben poder sustituir a sus tipos base.
+// Esto significa que, si S es un subtipo de T, los objetos de tipo T pueden
+// reemplazarse por objetos de tipo S sin alterar las propiedades deseables
+// del programa (corrección, tarea realizada, etc.).
 type Rectangle struct {
 	width  float64
 	height float64
@@ -15,9 +16,10 @@ func (r *Rectangle) Area() float64 {
 	return r.width * r.height
 }
 
-// Here, Square is a subtype of Rectangle, but it violates the LSP principle because it changes the
-// behavior of the Area method. The Area method of Square does not return the area of a rectangle,
-// but rather the area of a square. This can lead to unexpected behavior when using Square in place of Rectangle.
+// Aquí, Square es un subtipo de Rectangle, pero viola el principio LSP porque
+// cambia el comportamiento del método Area. El método Area de Square no
+// devuelve el área de un rectángulo, sino el área de un cuadrado. Esto puede
+// producir comportamientos inesperados al usar Square en lugar de Rectangle.
 type Square struct {
 	Rectangle
 }
@@ -32,9 +34,10 @@ func (s *Square) SetHeight(height float64) {
 	s.height = height
 }
 
-// The correct way to implement the LSP principle is to create a new interface for shapes that have an area,
-// and then implement that interface for both Rectangle and Square. This way, we can use both Rectangle and
-// Square interchangeably without violating the LSP principle.
+// La forma correcta de implementar el principio LSP es crear una nueva
+// interfaz para las figuras que tienen un área y luego implementarla tanto
+// para Rectangle como para Square. De esta manera, podemos usar Rectangle y
+// Square indistintamente sin violar el principio LSP.
 
 type Shape interface {
 	Area() float64

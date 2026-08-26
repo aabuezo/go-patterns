@@ -1,14 +1,14 @@
-// OCP - Open Responsibility Principle
+// OCP - Principio abierto/cerrado
 package main
 
 import "fmt"
 
-// OCP: Open for extension, closed for modification
-// Specification: is an enterprise pattern
-// it means that once you designed and tested the API of a particular type,
-// you shouldn't really have to modify it, but you can extend it by adding new functionality
-// you already got that type working, you already have clients relying on it,
-// you don't want to break those clients by changing the API
+// OCP: abierto para la extensión, cerrado para la modificación.
+// Specification es un patrón empresarial.
+// Esto significa que, una vez que diseñaste y probaste la API de un tipo,
+// no deberías tener que modificarla, pero sí puedes extenderla agregando
+// nuevas funcionalidades. Ese tipo ya funciona y tienes clientes que
+// dependen de él; no quieres romperlos cambiando la API.
 type Color int
 
 const (
@@ -33,9 +33,9 @@ type Product struct {
 
 type Filter struct{}
 
-// the following methods are not open for extension, closed for modification
-// they violate the OCP principle because if we want to add a new filter,
-// we have to modify the Filter struct
+// Los siguientes métodos no están abiertos a la extensión ni cerrados a la
+// modificación. Violan el principio OCP porque, si queremos agregar un
+// filtro nuevo, tenemos que modificar la estructura Filter.
 func (f Filter) FilterByColor(products []Product, color Color) []*Product {
 	result := make([]*Product, 0)
 	for i, v := range products {
@@ -46,7 +46,7 @@ func (f Filter) FilterByColor(products []Product, color Color) []*Product {
 	return result
 }
 
-// the following methods are not open for extension, closed for modification
+// Los siguientes métodos no están abiertos a la extensión ni cerrados a la modificación.
 func (f Filter) FilterBySize(products []Product, size Size) []*Product {
 	result := make([]*Product, 0)
 	for i, v := range products {
@@ -57,7 +57,7 @@ func (f Filter) FilterBySize(products []Product, size Size) []*Product {
 	return result
 }
 
-// the following methods are not open for extension, closed for modification
+// Los siguientes métodos no están abiertos a la extensión ni cerrados a la modificación.
 func (f Filter) FilterBySizeAndColor(products []Product, size Size, color Color) []*Product {
 	result := make([]*Product, 0)
 	for i, v := range products {
@@ -68,10 +68,10 @@ func (f Filter) FilterBySizeAndColor(products []Product, size Size, color Color)
 	return result
 }
 
-// The Specification pattern is a better way to implement the OCP principle
-// it is open for extension, closed for modification
+// El patrón Specification es una mejor forma de implementar el principio OCP:
+// está abierto a la extensión y cerrado a la modificación.
 type Specification interface {
-	// specifies whether a product satisfies a certain criteria
+	// Indica si un producto cumple un criterio determinado.
 	IsSatisfied(p *Product) bool
 }
 
@@ -91,7 +91,7 @@ func (s SizeSpecification) IsSatisfied(p *Product) bool {
 	return p.size == s.size
 }
 
-// composite specification that combines two specifications
+// Especificación compuesta que combina dos especificaciones.
 type AndSpecification struct {
 	first, second Specification
 }
@@ -100,14 +100,14 @@ func (a AndSpecification) IsSatisfied(p *Product) bool {
 	return a.first.IsSatisfied(p) && a.second.IsSatisfied(p)
 }
 
-// if you want to filter by a new criteria, you can create a new specification
-// that implements the Specification interface, without modifying the existing code
+// Si quieres filtrar por un criterio nuevo, puedes crear una especificación
+// que implemente la interfaz Specification sin modificar el código existente.
 
-// you're unlikely to ever modify this struct,
-// but you can extend it by adding new specifications
+// Es poco probable que alguna vez modifiques esta estructura,
+// pero puedes extenderla agregando nuevas especificaciones.
 type BetterFilter struct{}
 
-// Just one method that takes a specification and filters the products based on it
+// Un único método que recibe una especificación y filtra los productos según ella.
 func (b BetterFilter) Filter(products []Product, spec Specification) []*Product {
 	result := make([]*Product, 0)
 	for i, v := range products {
@@ -132,7 +132,7 @@ func main() {
 		fmt.Printf(" - %s is green\n", v.name)
 	}
 
-	// using the new filter with specifications
+	// Usando el nuevo filtro con especificaciones.
 	bf := BetterFilter{}
 	greenSpec := ColorSpecification{green}
 	largeSpec := SizeSpecification{large}
@@ -147,7 +147,7 @@ func main() {
 		fmt.Printf(" - %s is large\n", v.name)
 	}
 
-	// combining specifications
+	// Combinando especificaciones.
 	greenAndLargeSpec := AndSpecification{greenSpec, largeSpec}
 	fmt.Println("Green and large products (new):")
 	for _, v := range bf.Filter(products, greenAndLargeSpec) {

@@ -1,7 +1,7 @@
-// SRP = Single Responsibiility Principle
+// SRP = Principio de responsabilidad única
 package main
 
-// A type should have one responsibility only.
+// Un tipo debería tener una única responsabilidad.
 
 import (
 	"fmt"
@@ -12,8 +12,8 @@ import (
 
 var entryCount = 0
 
-// type Journal has a single responsibility (separation of concerns):
-// add/remove/etc of keeping entries and managing those entries
+// El tipo Journal tiene una única responsabilidad (separación de intereses):
+// agregar, eliminar, etc. entradas y administrar esas entradas.
 type Journal struct {
 	entries []string
 }
@@ -30,26 +30,26 @@ func (j *Journal) String() string {
 	return strings.Join(j.entries, "\n")
 }
 
-// separation of concerns
-// the responsibility of the Journal is not persistance!
-// Persistance can be managed by a different component
-// Think about other types that need persistance as well
-// persistance is common to many objects!
-func (j *Journal) Save(filename string) { // Breaks SRP!!
+// Separación de intereses.
+// ¡La persistencia no es responsabilidad de Journal!
+// La persistencia puede ser administrada por otro componente.
+// Pensemos también en otros tipos que necesitan persistencia.
+// ¡La persistencia es común a muchos objetos!
+func (j *Journal) Save(filename string) { // ¡Rompe el SRP!
 	_ = os.WriteFile(filename,
 		[]byte(j.String()), os.ModeAppend)
 }
 
-func (j *Journal) Load(filename string) { // Breaks SRP!!
+func (j *Journal) Load(filename string) { // ¡Rompe el SRP!
 
 }
 
-func (j *Journal) LoadFromWeb(url *url.URL) { // Breaks SRP!!
+func (j *Journal) LoadFromWeb(url *url.URL) { // ¡Rompe el SRP!
 
 }
 
-// Separating concerns would look like something like this
-// (package level)
+// Separar los intereses podría verse de la siguiente manera
+// (a nivel de paquete).
 var LineSeparator = "\n"
 
 func SaveToFile(j *Journal, filename string) {
@@ -57,7 +57,7 @@ func SaveToFile(j *Journal, filename string) {
 		[]byte(strings.Join(j.entries, LineSeparator)), 0644)
 }
 
-// or this (using a separate object)
+// O de esta manera (usando un objeto separado).
 type Persistence struct {
 	lineSeparator string
 }
@@ -73,7 +73,7 @@ func main() {
 	j.AddEntry("I ate a bug")
 	fmt.Println(j.String())
 
-	// Persistence
+	// Persistencia.
 	SaveToFile(&j, "journal.txt")
 	//
 	p := Persistence{"\r\n"}
